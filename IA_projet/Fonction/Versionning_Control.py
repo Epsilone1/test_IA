@@ -2,6 +2,13 @@ import importlib.metadata
 import subprocess
 import sys
 import os
+import json
+from pathlib import Path
+
+TempJSON = Path(__file__).parent / "Temp.json"
+TempJSON.unlink(missing_ok=True)
+TempJSON.write_text(json.dumps({"Version_torch_GPU": "None"}), encoding="utf-8")
+
 
 Version_torch_GPU = "cu130"
 
@@ -22,5 +29,4 @@ def Version_Control():
             os.execv(sys.executable, [sys.executable] + sys.argv + ["--deja-tente"])
         else:
             print("GPU ok")
-
-Version_Control()
+    TempJSON.write_text(json.dumps({"Version_torch_GPU": torch.__version__[-5:]}), encoding="utf-8")
