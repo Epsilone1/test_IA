@@ -32,7 +32,8 @@ transform = transforms.ToTensor()              # Convertit chaque image en tenso
 train_data = datasets.MNIST(root='.', train=True, download=True, transform=transform)
                                                # Jeu d'entraînement MNIST : 60 000 images étiquetées
 loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=True)
-reussite = 0                                               # Découpe en batchs de 96 ; shuffle=True = ordre mélangé à chaque époque
+reussite = 0   
+pourcentage_reussite = 0                                            # Découpe en batchs de 96 ; shuffle=True = ordre mélangé à chaque époque
 def test_model():
     
     for idx in range(nombredimagesfinales):        # Phase de test : évalue le modèle sur des images
