@@ -28,7 +28,7 @@ from Fonction.Modele import Reseau
 
 # --- Reglages ---
 NB_EPOCHS = 5        # nombre de passages complets sur toutes les images
-TAILLE_LOT = 64      # nombre d'images traitees en meme temps
+TAILLE_LOT = 5000      # nombre d'images traitees en meme temps
 
 DOSSIER = Path(__file__).parent
 FICHIER_POIDS = DOSSIER / "Modele" / "modele.pth"
@@ -59,12 +59,24 @@ chargeur_test = DataLoader(jeu_test, batch_size=TAILLE_LOT)
 
 # --- Modele ---
 modele = Reseau().to(appareil)
-
+if FICHIER_POIDS.exists():
+    modele.load_state_dict(torch.load(FICHIER_POIDS, map_location=appareil))
 # La fonction de perte mesure l'ecart entre la prediction et la bonne reponse.
 fonction_perte = nn.CrossEntropyLoss()
 # L'optimiseur decide comment corriger les poids a partir de cette erreur.
 optimiseur = torch.optim.Adam(modele.parameters(), lr=1e-3)
 
+def test_images():
+    bien_classees = 0
+    with torch.no_grad():   # pas de correction ici : on ne fait que tester
+        for images, etiquettes in chargeur_test:
+            images = images.to(appareil)
+            etiquettes = etiquettes.to(appareil)
+            predictions = modele(images)
+            # argmax = le chiffre qui a obtenu le meilleur score
+            bien_classees += (predictions.argmax(dim=1) == etiquettes).sum().item()
+
+    print(f"precision sur le test : {bien_classees / len(jeu_test) * 100:.2f}%")
 
 # --- Apprentissage ---
 for epoch in range(1, NB_EPOCHS + 1):
@@ -81,21 +93,9 @@ for epoch in range(1, NB_EPOCHS + 1):
 
     print(f"epoch {epoch}/{NB_EPOCHS} | perte {perte.item():.4f}")
 
-
-# --- Verification sur les images jamais vues ---
-bien_classees = 0
-with torch.no_grad():   # pas de correction ici : on ne fait que tester
-    for images, etiquettes in chargeur_test:
-        images = images.to(appareil)
-        etiquettes = etiquettes.to(appareil)
-        predictions = modele(images)
-        # argmax = le chiffre qui a obtenu le meilleur score
-        bien_classees += (predictions.argmax(dim=1) == etiquettes).sum().item()
-
-print(f"precision sur le test : {bien_classees / len(jeu_test) * 100:.2f}%")
+    test_images()
 
 
 # --- Sauvegarde de ce qui a ete appris ---
 FICHIER_POIDS.parent.mkdir(exist_ok=True)
 torch.save(modele.state_dict(), FICHIER_POIDS)
-print("poids sauvegardes :", FICHIER_POIDS)

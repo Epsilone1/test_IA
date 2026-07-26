@@ -22,9 +22,11 @@ class Reseau(nn.Module):
         super().__init__()
         self.couches = nn.Sequential(
             nn.Flatten(),          # met les 28x28 pixels sur une seule ligne = 784 valeurs
-            nn.Linear(784, 128),   # 784 entrees -> 128 neurones
+            nn.Linear(784, 2048),   # 784 entrees -> 2048 neurones
             nn.ReLU(),             # garde les valeurs positives, met le reste a 0
-            nn.Linear(128, 10),    # 128 neurones -> 10 scores de sortie
+            nn.Linear(2048, 512),   # 2048 entrees -> 512 neurones
+            nn.ReLU(),             # garde les valeurs positives, met le reste a 0
+            nn.Linear(512, 10),    # 512 neurones -> 10 scores de sortie
         )
 
     def forward(self, x):
