@@ -1,1 +1,0 @@
-# test_IA_image
